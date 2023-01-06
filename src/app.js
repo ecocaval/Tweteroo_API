@@ -3,11 +3,12 @@ import cors from "cors"
 
 const serverUsers = []
 const serverTweets = []
-
 const PORT = 5000
 const app = express()
+
 app.use(cors())
 app.use(express.json())
+
 app.listen(PORT, () => console.log(`Running on port ${PORT}`))
 
 app.post("/sign-up", (req, res) => {
@@ -30,7 +31,7 @@ app.post("/tweets", (req, res) => {
 
 app.get("/tweets", (_, res) => {
     let lastTweets = []
-    const recentTweets = serverTweets.reverse()
+    let recentTweets = serverTweets.reverse()
 
     if(recentTweets) {
         if(recentTweets.length > 10) {
