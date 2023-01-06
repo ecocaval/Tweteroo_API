@@ -10,9 +10,20 @@ const serverTweets = []
 let lastTweets = []
 let allTweets = []
 
+function addAvatarToTweets(refTweets) {
+    const refTweetsWithAvatar = refTweets.map(item => {
+        const nameAndAvatar = serverUsers.find(_item => _item.username === item.username)
+        return {
+            username: item.username,
+            avatar: nameAndAvatar.avatar,
+            tweet: item.tweet
+        }
+    })
+    return refTweetsWithAvatar
+}
+
 app.use(cors())
 app.use(express.json())
-
 app.listen(PORT, () => console.log(`Running on port ${PORT}`))
 
 app.post("/sign-up", (req, res) => {
@@ -63,37 +74,17 @@ app.get("/tweets", (_, res) => {
     allTweets = serverTweets.reverse()
 
     if (allTweets) {
-        if (allTweets.length > 10) {
-            allTweets = allTweets.slice(0, 10)
-        }
+        if (allTweets.length > 10) allTweets = allTweets.slice(0, 10)
 
-        lastTweets = allTweets.map(item => {
-            const nameAndAvatar = serverUsers.find(_item => _item.username === item.username)
-
-            return {
-                username: item.username,
-                avatar: nameAndAvatar.avatar,
-                tweet: item.tweet
-            }
-        })
+        lastTweets = addAvatarToTweets(allTweets)
         res.send(lastTweets)
     }
 })
 
 app.get("/tweets/:username", (req, res) => {
-    const {username} = req.params
+    const { username } = req.params
 
-    allTweets = serverTweets.reverse()
-
-    allTweets = allTweets.map(item => {
-        const nameAndAvatar = serverUsers.find(_item => _item.username === item.username)
-
-        return {
-            username: item.username,
-            avatar: nameAndAvatar.avatar,
-            tweet: item.tweet
-        }
-    })
+    allTweets = addAvatarToTweets(serverTweets.reverse())
 
     const userTweets = allTweets.filter(item => (item.username === username))
 
