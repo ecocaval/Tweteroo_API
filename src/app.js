@@ -1,10 +1,14 @@
 import express from "express"
 import cors from "cors"
 
-const serverUsers = []
-const serverTweets = []
 const PORT = 5000
 const app = express()
+
+const serverUsers = []
+const serverTweets = []
+
+let lastTweets = []
+let allTweets = []
 
 app.use(cors())
 app.use(express.json())
@@ -56,15 +60,14 @@ app.post("/tweets", (req, res) => {
 })
 
 app.get("/tweets", (_, res) => {
-    let lastTweets = []
-    let recentTweets = serverTweets.reverse()
+    allTweets = serverTweets.reverse()
 
-    if (recentTweets) {
-        if (recentTweets.length > 10) {
-            recentTweets = recentTweets.slice(0, 10)
+    if (allTweets) {
+        if (allTweets.length > 10) {
+            allTweets = allTweets.slice(0, 10)
         }
 
-        lastTweets = recentTweets.map(item => {
+        lastTweets = allTweets.map(item => {
             const nameAndAvatar = serverUsers.find(_item => _item.username === item.username)
 
             return {
@@ -75,4 +78,24 @@ app.get("/tweets", (_, res) => {
         })
         res.send(lastTweets)
     }
+})
+
+app.get("/tweets/:username", (req, res) => {
+    const {username} = req.params
+
+    allTweets = serverTweets.reverse()
+
+    allTweets = allTweets.map(item => {
+        const nameAndAvatar = serverUsers.find(_item => _item.username === item.username)
+
+        return {
+            username: item.username,
+            avatar: nameAndAvatar.avatar,
+            tweet: item.tweet
+        }
+    })
+
+    const userTweets = allTweets.filter(item => (item.username === username))
+
+    res.send(userTweets)
 })
