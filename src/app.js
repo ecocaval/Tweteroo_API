@@ -15,7 +15,7 @@ app.post("/sign-up", (req, res) => {
     const user = req.body
     const { username, avatar } = req.body
 
-    if(!username || !avatar) {
+    if (!username || !avatar) {
         return res.status(400).send("Todos os campos são obrigatórios!")
     }
 
@@ -27,7 +27,7 @@ app.post("/sign-up", (req, res) => {
     }
 
     serverUsers.push(user)
-    res.send("OK")
+    res.status(201).send("OK")
 })
 
 app.post("/tweets", (req, res) => {
@@ -37,7 +37,7 @@ app.post("/tweets", (req, res) => {
     const tweetIsEmpty = !tweet
     const tweetIsString = (typeof tweet === "string")
 
-    if(tweetIsEmpty) {
+    if (tweetIsEmpty) {
         return res.status(400).send("Todos os campos são obrigatórios!")
     }
 
@@ -49,10 +49,10 @@ app.post("/tweets", (req, res) => {
 
     if (userRegistered) {
         serverTweets.push(fullTweet)
-        return res.send("OK")
+        return res.status(201).send("OK")
     }
 
-    res.send("UNAUTHORIZED")
+    res.status(401).send("UNAUTHORIZED")
 })
 
 app.get("/tweets", (_, res) => {
