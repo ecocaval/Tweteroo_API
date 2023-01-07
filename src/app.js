@@ -66,12 +66,21 @@ app.post("/sign-up", (req, res) => {
 
 app.post("/tweets", (req, res) => {
     const fullTweet = req.body
-    const tweetIsEmpty = !fullTweet.tweet
-    const tweetIsString = (typeof fullTweet.tweet === "string")
+    const { user } = req.headers
 
-    if (tweetIsEmpty) return res.status(400).send("Todos os campos são obrigatórios!")
+    if (!fullTweet.tweet) return res.status(400).send("Todos os campos são obrigatórios!")
 
-    if (!tweetIsString) return res.sendStatus(400)
+    if (!(typeof fullTweet.tweet === "string")) return res.sendStatus(400)
+
+    if (user) {
+        const userRegistered = serverUsers.find(item => item.username === user)
+
+        if (userRegistered) {
+            serverTweets.push({username: user, tweet: fullTweet.tweet})
+            return res.status(201).send("OK")
+        }
+        return res.status(401).send("UNAUTHORIZED")
+    }
 
     const userRegistered = serverUsers.find(item => item.username === fullTweet.username)
 
