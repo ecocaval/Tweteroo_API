@@ -53,10 +53,9 @@ app.post("/sign-up", (req, res) => {
         return res.status(400).send("Todos os campos são obrigatórios!")
     }
 
-    const inputsAreEmpty = !user.username || !user.avatar
     const inputsAreStrings = (typeof user.username === "string" && typeof user.avatar === "string")
 
-    if (inputsAreEmpty || !inputsAreStrings) {
+    if (!inputsAreStrings) {
         return res.sendStatus(400)
     }
 
