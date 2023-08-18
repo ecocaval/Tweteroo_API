@@ -1,12 +1,14 @@
 import express from "express"
 import cors from "cors"
 import chalk from "chalk"
+import { v4 as uuidv4 } from 'uuid';
 
 const PORT = 5000
 const app = express()
 
 const serverUsers = []
 const serverTweets = []
+const serverTokens = []
 
 let allTweets = []
 let pageTweets = []
@@ -26,17 +28,62 @@ app.post("/sign-up", (req, res) => {
         return res.status(400).send("Todos os campos são obrigatórios!")
     }
 
-    const inputsAreStrings = (typeof user.username === "string" && typeof user.avatar === "string")
+    if (!user.password || !user.passwordConfirmation) {
+        return res.status(400).send("O campo de senha é obrigatório!")
+    }
+
+    if (user.password !== user.passwordConfirmation) {
+        return res.status(400).send("As senhas enviadas não coincidem!")
+    }
+
+    const inputsAreStrings = (
+        typeof user.username === "string" && 
+        typeof user.avatar === "string" &&
+        typeof user.password === "string" && 
+        typeof user.passwordConfirmation === "string" 
+    )
+
+    const userAlreadyExists = serverUsers.filter(user_ => {
+        return user_.username == user.username
+    }).length !== 0
+
+    if(!!userAlreadyExists) {
+        return res.status(409).send("Usuário já cadastrado!")
+    }
 
     if (!inputsAreStrings) {
         return res.sendStatus(400)
     }
 
     serverUsers.push(user)
+
     res.status(201).send("OK")
 })
 
+app.post("/sign-in", (req, res) => {
+    const {username, password} = req.body
+
+    const [user] = serverUsers.filter(user => {
+        return user.username === username
+    })
+
+    if(user.length === 0) {
+        return res.status(404).send("Usuário não encontrado!")
+    }
+
+    if(user.password !== password) {
+        return res.status(401).send("Senha incorreta!")
+    }
+
+    const token = uuidv4()
+
+    serverTokens.push(token);
+
+    res.status(201).send({token})
+})
+
 app.post("/tweets", (req, res) => {
+
     const fullTweet = req.body
     const { user } = req.headers
 
@@ -94,6 +141,16 @@ app.get("/tweets", (req, res) => {
             return res.send(pageTweets)
         }
     }
+})
+
+app.get("/users", (req, res) => {
+    const {token} = req.headers;
+
+    if(!serverTokens.includes(token)) {
+        return res.status(401).send("Token inválido!")
+    }
+    
+    return res.send(serverUsers);
 })
 
 app.get("/tweets/:username", (req, res) => {
